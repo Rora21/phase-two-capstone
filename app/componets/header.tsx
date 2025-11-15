@@ -4,9 +4,10 @@ export default function Header() {
       <div className="max-w-5xl mx-auto flex justify-between items-center">
         <h1 className="text-xl font-semibold">Aurie Blog</h1>
         <nav className="space-x-6">
-          <a href="/" className="hover:underline">Home</a>
+          {/* <a href="/" className="hover:underline">Home</a> */}
           <a href="/write" className="hover:underline">Write</a>
           <a href="/login" className="hover:underline">Login</a>
+          <a href="/signup" className="hover:underline">signup</a>
         </nav>
       </div>
     </header>

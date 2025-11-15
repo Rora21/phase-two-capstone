@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "firebase": "^12.6.0",
+    "jodit-react": "^5.2.38",
     "next": "16.0.3",
     "react": "19.2.0",
     "react-dom": "19.2.0"

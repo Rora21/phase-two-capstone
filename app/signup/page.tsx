@@ -19,7 +19,7 @@ export default function SignupPage() {
       await createUserWithEmailAndPassword(auth, email, password);
       alert("Account Created!");
     } catch (err) {
-      setError(err.message);
+      setError;
     } finally {
       setLoading(false);
     }

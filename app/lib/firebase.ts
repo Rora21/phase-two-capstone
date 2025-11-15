@@ -1,25 +1,26 @@
 // app/lib/firebase.ts
-
 import { initializeApp } from "firebase/app";
-import { getAnalytics, isSupported } from "firebase/analytics";
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
+import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCnTzoF72RoZyZuU3AbxemZvzOa_FHAjPg",
-  authDomain: "phase-two-capstone.firebaseapp.com",
-  projectId: "phase-two-capstone",
-  storageBucket: "phase-two-capstone.firebasestorage.app",
-  messagingSenderId: "602748338308",
-  appId: "1:602748338308:web:2729970d1254e54260c2d1",
-  measurementId: "G-D8FVGNEP58"
+  apiKey: "YOUR_KEY",
+  authDomain: "YOUR_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_BUCKET",
+  messagingSenderId: "YOUR_ID",
+  appId: "YOUR_APP_ID"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-let analytics = null;
-if (typeof window !== "undefined") {
-  isSupported().then((yes) => {
-    if (yes) analytics = getAnalytics(app);
-  });
-}
+// Firestore
+export const db = getFirestore(app);
 
-export { app, analytics };
+// Storage
+export const storage = getStorage(app);
+
+// Auth 🟦
+export const auth = getAuth(app);

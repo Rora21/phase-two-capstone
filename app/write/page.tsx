@@ -89,7 +89,7 @@ export default function WritePage() {
       <button
         onClick={handlePublish}
         disabled={loading}
-        className="mt-6 w-full p-3 bg-green-700 text-white rounded-lg"
+        className="mt-6 mb-10 w-full p-3 bg-green-700 text-white rounded-lg"
       >
         {loading ? "Publishing..." : "Publish Article"}
       </button>

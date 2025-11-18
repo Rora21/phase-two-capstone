@@ -1,55 +1,48 @@
-// app/page.tsx
+"use client";
+
+import { useEffect, useState } from "react";
+import { db } from "./lib/firebase";
+import { collection, query, where, onSnapshot, orderBy } from "firebase/firestore";
+import Link from "next/link";
 
 export default function HomePage() {
+  const [posts, setPosts] = useState([]);
+
+  useEffect(() => {
+    const q = query(
+      collection(db, "posts"),
+      where("status", "==", "published"),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setPosts(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   return (
-    <div className="flex gap-14">
-      
-      {/* LEFT - Articles */}
-      <div className="flex-1">
-        <section className="mb-16">
-          <h1 className="text-5xl font-extrabold mb-4 leading-tight text-[#1A3D2F]">
-            Ideas & Stories  
-            <br />
-            from Aurie’s Community
-          </h1>
+    <div className="max-w-3xl mx-auto py-12">
 
-          <p className="text-xl text-[#3D5A48]">
-            Explore powerful articles written by the community.  
-            Your medium, your voice.
-          </p>
-        </section>
+      <h1 className="text-5xl font-extrabold mb-8 text-[#1A3D2F]">
+        Latest Stories
+      </h1>
 
-        {/* Articles list */}
-        <div className="space-y-10">
-          {[1, 2, 3].map((item) => (
-            <article
-              key={item}
-              className="bg-white rounded-xl p-6 border border-[#E0D8CC]"
-            >
-              <h2 className="text-2xl font-bold mb-2">
-                Example Article #{item}
-              </h2>
-              <p className="text-[#5E7B6F]">
-                This is a placeholder article description. Once we connect Firebase,
-                we will show real articles here.
+      {posts.length === 0 ? (
+        <p className="text-gray-500">No articles yet.</p>
+      ) : (
+        posts.map((post) => (
+          <Link key={post.id} href={`/post/${post.id}`}>
+            <div className="p-6 bg-white shadow rounded-xl mb-6 border border-[#E0D8CC] cursor-pointer hover:bg-[#FAF8F3]">
+              <h2 className="text-2xl font-bold text-[#2D5038]">{post.title}</h2>
+              <p className="text-[#5E7B6F] mt-2 line-clamp-2">
+                {post.content.replace(/<[^>]+>/g, "").slice(0, 150)}...
               </p>
-            </article>
-          ))}
-        </div>
-      </div>
-
-      {/* RIGHT - Sidebar */}
-      <aside className="w-64 hidden md:block">
-        <h3 className="text-xl font-bold mb-6 text-[#1A3D2F]">Trending Topics</h3>
-
-        <div className="flex flex-col gap-3 text-[#3D5A48]">
-          <span>#Tech</span>
-          <span>#Development</span>
-          <span>#Life</span>
-          <span>#Design</span>
-          <span>#Business</span>
-        </div>
-      </aside>
+            </div>
+          </Link>
+        ))
+      )}
     </div>
   );
 }

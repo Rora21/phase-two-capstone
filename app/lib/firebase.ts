@@ -5,12 +5,13 @@ import { getStorage } from "firebase/storage";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "YOUR_KEY",
-  authDomain: "YOUR_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_BUCKET",
-  messagingSenderId: "YOUR_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyCnTzoF72RoZyZuU3AbxemZvzOa_FHAjPg",
+  authDomain: "phase-two-capstone.firebaseapp.com",
+  projectId: "phase-two-capstone",
+  storageBucket: "phase-two-capstone.firebasestorage.app.com",
+  messagingSenderId: "602748338308",
+  appId: "1:602748338308:web:2729970d1254e54260c2d1",
+  measurementId: "G-D8FVGNEP58"
 };
 
 // Initialize Firebase

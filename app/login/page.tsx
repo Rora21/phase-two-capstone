@@ -4,8 +4,10 @@ import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../lib/firebase";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
+    const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,6 +21,8 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       alert("Logged in successfully!");
+      // Redirect to home page after successful login
+    router.push("/");
     } catch (err: any) {
       setError(err.message);
     }

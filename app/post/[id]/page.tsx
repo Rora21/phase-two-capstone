@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { db, auth } from "../../lib/firebase";
 import {
   doc,
@@ -15,8 +15,8 @@ import {
 import { arrayUnion, arrayRemove, updateDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 
-export default function PostPage({ params }: { params: { id: string } }) {
-  const { id } = params ?? ({} as any);
+export default function PostPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const [post, setPost] = useState<any>(null);
   const [comments, setComments] = useState<any[]>([]);
   const [newComment, setNewComment] = useState("");

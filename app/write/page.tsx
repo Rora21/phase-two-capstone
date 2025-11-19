@@ -138,58 +138,85 @@ export default function WritePage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto py-12">
-      <h2 className="text-3xl font-bold text-[#3E6B4B] mb-6">
-        {isEditing ? "Edit your story" : "Write your story"}
-      </h2>
+    <div className="min-h-screen bg-white">
+      <div className="max-w-4xl mx-auto px-6 py-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200">
+          <h1 className="text-2xl font-bold text-gray-900">
+            {isEditing ? "Edit story" : "Write a story"}
+          </h1>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                setStatus("draft");
+                handleSave();
+              }}
+              className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition"
+              disabled={loading}
+            >
+              {loading && status === "draft" ? "Saving..." : "Save draft"}
+            </button>
+            <button
+              onClick={() => {
+                setStatus("published");
+                handleSave();
+              }}
+              className="px-6 py-2 bg-black text-white text-sm rounded-full hover:bg-gray-800 transition disabled:opacity-50"
+              disabled={loading}
+            >
+              {loading && status === "published" ? "Publishing..." : "Publish"}
+            </button>
+          </div>
+        </div>
 
-      <input
-        className="w-full p-3 border rounded mb-4 focus:ring-2 focus:ring-[#3E6B4B] focus:border-transparent"
-        placeholder="Post title..."
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-      />
+        {/* Editor */}
+        <div className="space-y-6">
+          <input
+            className="w-full text-4xl font-bold text-gray-900 placeholder-gray-400 border-none outline-none bg-transparent"
+            placeholder="Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
 
-      <select
-        className="w-full p-3 border rounded mb-4 focus:ring-2 focus:ring-[#3E6B4B] focus:border-transparent"
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
-      >
-        <option value="">Select Category</option>
-        <option value="technology">Technology</option>
-        <option value="lifestyle">Lifestyle</option>
-        <option value="business">Business</option>
-        <option value="health">Health</option>
-        <option value="travel">Travel</option>
-        <option value="food">Food</option>
-        <option value="general">General</option>
-      </select>
+          <select
+            className="px-3 py-2 border border-gray-200 rounded text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            <option value="">Choose a topic</option>
+            <option value="technology">Technology</option>
+            <option value="lifestyle">Lifestyle</option>
+            <option value="business">Business</option>
+            <option value="health">Health</option>
+            <option value="travel">Travel</option>
+            <option value="food">Food</option>
+            <option value="general">General</option>
+          </select>
 
-      {/* Editor */}
-      <JoditEditor ref={editor} value={content} onChange={setContent} />
-
-      <div className="mt-6 flex gap-4">
-        <button
-          onClick={() => {
-            setStatus("draft");
-            handleSave();
-          }}
-          className="px-6 py-3 bg-gray-300 rounded hover:bg-gray-400"
-          disabled={loading}
-        >
-          {loading ? "Saving..." : "Save Draft"}
-        </button>
-
-        <button
-          onClick={() => {
-            setStatus("published");
-            handleSave();
-          }}
-          className="px-6 py-3 bg-[#3E6B4B] text-white rounded hover:bg-[#2D5038]"
-          disabled={loading}
-        >
-          {loading ? "Publishing..." : "Publish"}
-        </button>
+          <div className="min-h-96">
+            <JoditEditor 
+              ref={editor} 
+              value={content} 
+              onChange={setContent}
+              config={{
+                readonly: false,
+                placeholder: 'Tell your story...',
+                minHeight: 400,
+                showCharsCounter: false,
+                showWordsCounter: false,
+                showXPathInStatusbar: false,
+                toolbarAdaptive: false,
+                buttons: [
+                  'bold', 'italic', 'underline', '|',
+                  'ul', 'ol', '|',
+                  'link', 'image', '|',
+                  'align', '|',
+                  'undo', 'redo'
+                ]
+              }}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

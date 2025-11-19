@@ -64,13 +64,13 @@ export default function DraftsPage() {
           <div className="space-x-4">
             <Link 
               href="/login"
-              className="px-6 py-3 bg-[#3E6B4B] text-white rounded-lg hover:bg-[#2D5038] transition"
+              className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition"
             >
               Login
             </Link>
             <Link 
               href="/signup"
-              className="px-6 py-3 border border-[#3E6B4B] text-[#3E6B4B] rounded-lg hover:bg-[#E0D8CC] transition"
+              className="px-6 py-3 border border-black text-black rounded-lg hover:bg-gray-100 transition"
             >
               Sign Up
             </Link>
@@ -86,7 +86,7 @@ export default function DraftsPage() {
         <h1 className="text-3xl font-bold text-[#1A3D2F]">Your Drafts</h1>
         <Link
           href="/write"
-          className="px-4 py-2 bg-[#3E6B4B] text-white rounded-lg hover:bg-[#2D5038] transition"
+          className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition"
         >
           New Post
         </Link>
@@ -101,7 +101,7 @@ export default function DraftsPage() {
           <p className="text-[#5E7B6F] mb-4">No drafts yet.</p>
           <Link
             href="/write"
-            className="inline-block px-6 py-3 bg-[#3E6B4B] text-white rounded-lg hover:bg-[#2D5038] transition"
+            className="inline-block px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition"
           >
             Write Your First Post
           </Link>
@@ -129,7 +129,7 @@ export default function DraftsPage() {
                 <div className="flex items-center gap-2 ml-4">
                   <Link
                     href={`/write?edit=${draft.id}`}
-                    className="px-3 py-1 text-sm bg-[#3E6B4B] text-white rounded hover:bg-[#2D5038] transition"
+                    className="px-3 py-1 text-sm bg-black text-white rounded hover:bg-gray-800 transition"
                   >
                     Edit
                   </Link>

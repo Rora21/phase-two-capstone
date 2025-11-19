@@ -19,46 +19,50 @@ export default function RootLayout({ children }) {
 
   return (
     <html lang="en">
-      <body className="bg-[#F5F1E8] text-[#1A3D2F]">
+      <body className="bg-white text-gray-900 font-sans">
         
         {/* NAVBAR */}
-        <header className="border-b border-[#D6CBBE] bg-[#F5F1E8] sticky top-0 z-50">
-          <nav className="flex items-center justify-between px-10 py-4">
-            <Link href="/" className="text-2xl font-bold text-[#1A3D2F]">
-              Aurie Medium
-            </Link>
+        <header className="border-b border-gray-200 bg-white sticky top-0 z-50">
+          <nav className="flex items-center justify-between px-6 py-3 max-w-7xl mx-auto">
+            <div className="flex items-center gap-8">
+              <Link href="/" className="text-2xl font-bold text-black">
+                Medium
+              </Link>
+              
+              <div className="hidden md:flex items-center gap-6 text-sm text-gray-600">
+                <Link href="/" className="hover:text-black transition">Home</Link>
+                {user && <Link href="/write" className="hover:text-black transition">Write</Link>}
+                {user && <Link href="/draft" className="hover:text-black transition">Stories</Link>}
+              </div>
+            </div>
 
-            <div className="flex gap-6 text-[#1A3D2F] items-center">
-
-              <Link href="/" className="hover:underline">Home</Link>
-              {user && <Link href="/write" className="hover:underline">Write</Link>}
-              {user && <Link href="/draft" className="hover:underline">Drafts</Link>}
-
-              {/* IF USER LOGGED IN → SHOW NAME + LOGOUT */}
+            <div className="flex items-center gap-4">
               {user ? (
                 <div className="flex items-center gap-4">
                   <Link 
                     href={`/profile/${user.email?.split("@")[0]}`}
-                    className="font-semibold hover:underline"
+                    className="text-sm text-gray-600 hover:text-black transition"
                   >
                     {user.email?.split("@")[0]}
                   </Link>
 
                   <button
                     onClick={() => signOut(auth)}
-                    className="px-3 py-1 bg-[#1A3D2F] text-[#F5F1E8] rounded hover:bg-[#254735]"
+                    className="text-sm text-gray-600 hover:text-black transition"
                   >
-                    Logout
+                    Sign out
                   </button>
                 </div>
               ) : (
                 <div className="flex items-center gap-4">
-                  <Link href="/login" className="hover:underline">Login</Link>
+                  <Link href="/login" className="text-sm text-gray-600 hover:text-black transition">
+                    Sign in
+                  </Link>
                   <Link 
                     href="/signup" 
-                    className="px-4 py-2 bg-[#3E6B4B] text-white rounded-lg hover:bg-[#2D5038] transition"
+                    className="px-4 py-2 bg-black text-white text-sm rounded-full hover:bg-gray-800 transition"
                   >
-                    Sign up
+                    Get started
                   </Link>
                 </div>
               )}
@@ -67,11 +71,13 @@ export default function RootLayout({ children }) {
         </header>
 
         {/* PAGE CONTENT */}
-        <main className="px-10 py-10">{children}</main>
+        <main>{children}</main>
 
         {/* FOOTER */}
-        <footer className="mt-20 bg-[#1A3D2F] text-[#F5F1E8] py-10 text-center">
-          <p>Aurie Medium © {new Date().getFullYear()}</p>
+        <footer className="border-t border-gray-200 bg-white py-8 mt-16">
+          <div className="max-w-7xl mx-auto px-6 text-center">
+            <p className="text-sm text-gray-500">© {new Date().getFullYear()} Medium Clone</p>
+          </div>
         </footer>
       </body>
     </html>

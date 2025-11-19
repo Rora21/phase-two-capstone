@@ -44,7 +44,6 @@ export default function HomePage() {
       setLoading(false);
     });
 
-    // Listen to current user
     const unsubAuth = (auth as any).onAuthStateChanged?.((user: any) => {
       setCurrentUser(user);
       if (user) {
@@ -80,7 +79,6 @@ export default function HomePage() {
         const following = userDoc.data().following || [];
         setFollowingList(following);
         
-        // Load the emails of users we're following
         if (following.length > 0) {
           const followingUsersData = await Promise.all(
             following.map(async (followingId: string) => {
@@ -105,7 +103,6 @@ export default function HomePage() {
     }
     
     try {
-      // Find the author's user document
       const usersRef = collection(db, "users");
       const authorQuery = query(usersRef, where("email", "==", authorEmail));
       const authorSnapshot = await getDocs(authorQuery);
@@ -114,11 +111,9 @@ export default function HomePage() {
         const authorDoc = authorSnapshot.docs[0];
         const authorId = authorDoc.id;
         
-        // Get current user document
         const currentUserRef = doc(db, "users", currentUser.uid);
         const currentUserDoc = await getDoc(currentUserRef);
         
-        // Create user document if it doesn't exist
         if (!currentUserDoc.exists()) {
           await setDoc(currentUserRef, {
             uid: currentUser.uid,
@@ -135,7 +130,6 @@ export default function HomePage() {
         const isCurrentlyFollowing = currentFollowing.includes(authorId);
         
         if (isCurrentlyFollowing) {
-          // Unfollow
           await updateDoc(currentUserRef, {
             following: arrayRemove(authorId)
           });
@@ -145,7 +139,6 @@ export default function HomePage() {
           setFollowingList(prev => prev.filter(id => id !== authorId));
           setFollowingEmails(prev => prev.filter(email => email !== authorEmail));
         } else {
-          // Follow
           await updateDoc(currentUserRef, {
             following: arrayUnion(authorId)
           });
@@ -156,12 +149,10 @@ export default function HomePage() {
           setFollowingEmails(prev => [...prev, authorEmail]);
         }
         
-        // Reload following list to update UI
         await loadFollowingList(currentUser.uid);
         
       } else {
         console.log("Author not found in users collection. Creating author profile...");
-        // Create author profile if it doesn't exist
         const newAuthorRef = doc(collection(db, "users"));
         await setDoc(newAuthorRef, {
           email: authorEmail,
@@ -171,7 +162,6 @@ export default function HomePage() {
           joinedAt: serverTimestamp()
         });
         
-        // Update current user's following list
         const currentUserRef = doc(db, "users", currentUser.uid);
         await updateDoc(currentUserRef, {
           following: arrayUnion(newAuthorRef.id)
@@ -187,20 +177,20 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F1E8]">
+    <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-[#1A3D2F] to-[#2D5038] text-white">
-        <div className="max-w-6xl mx-auto px-4 py-20">
-          <div className="max-w-3xl">
-            <h1 className="text-6xl font-bold mb-6 leading-tight">
-              Stay curious.
+      <div className="bg-black border-b border-gray-800">
+        <div className="max-w-7xl mx-auto px-6 py-20">
+          <div className="max-w-2xl">
+            <h1 className="text-6xl md:text-8xl font-bold text-white mb-6 leading-tight">
+              Human<br />stories & ideas
             </h1>
-            <p className="text-xl mb-8 text-[#E0D8CC]">
-              Discover stories, thinking, and expertise from writers on any topic.
+            <p className="text-xl text-gray-300 mb-8">
+              A place to read, write, and deepen your understanding
             </p>
             <Link
               href="/write"
-              className="inline-block bg-white text-[#1A3D2F] px-8 py-3 rounded-full font-semibold hover:bg-[#E0D8CC] transition"
+              className="inline-block bg-white text-black px-8 py-3 rounded-full text-lg font-medium hover:bg-gray-100 transition shadow-lg"
             >
               Start writing
             </Link>
@@ -209,20 +199,48 @@ export default function HomePage() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Main Feed */}
           <div className="lg:col-span-2">
+            <div className="border-b border-gray-200 mb-8">
+              <div className="flex gap-8 overflow-x-auto pb-4">
+                <button
+                  onClick={() => filterByCategory("")}
+                  className={`whitespace-nowrap pb-4 border-b-2 transition text-sm ${
+                    selectedCategory === "" 
+                      ? "border-black text-black" 
+                      : "border-transparent text-gray-500 hover:text-gray-900"
+                  }`}
+                >
+                  For you
+                </button>
+                {['technology', 'lifestyle', 'business', 'health', 'travel', 'food', 'general'].map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => filterByCategory(category)}
+                    className={`whitespace-nowrap pb-4 border-b-2 transition text-sm capitalize ${
+                      selectedCategory === category 
+                        ? "border-black text-black" 
+                        : "border-transparent text-gray-500 hover:text-gray-900"
+                    }`}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {loading ? (
               <div className="text-center py-12">
-                <div className="animate-pulse text-[#5E7B6F] text-lg">Loading stories...</div>
+                <div className="text-gray-500">Loading stories...</div>
               </div>
-            ) : posts.length === 0 ? (
+            ) : filteredPosts.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-[#5E7B6F] text-lg mb-4">No stories yet.</p>
+                <p className="text-gray-500 text-lg mb-4">No stories yet.</p>
                 <Link
                   href="/write"
-                  className="inline-block bg-[#3E6B4B] text-white px-6 py-3 rounded-full hover:bg-[#2D5038] transition"
+                  className="inline-block bg-black text-white px-6 py-3 rounded-full hover:bg-gray-800 transition"
                 >
                   Write the first story
                 </Link>
@@ -230,48 +248,45 @@ export default function HomePage() {
             ) : (
               <div className="space-y-8">
                 {filteredPosts.map((post, index) => (
-                  <article key={post.id} className="group">
-                    <div className={`flex gap-6 ${index === 0 ? 'pb-8 border-b border-[#E0D8CC]' : ''}`}>
+                  <article key={post.id} className="group pb-8 border-b border-gray-100 last:border-b-0">
+                    <div className="flex gap-6">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-3">
-                          <div className="w-6 h-6 bg-[#3E6B4B] rounded-full flex items-center justify-center text-white text-xs font-bold">
+                          <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center text-white text-xs font-medium">
                             {post.author?.charAt(0)?.toUpperCase() || 'A'}
                           </div>
                           <Link 
                             href={`/profile/${post.author?.split('@')[0] || 'unknown'}`}
-                            className="text-sm text-[#5E7B6F] hover:text-[#3E6B4B] transition"
+                            className="text-sm text-gray-800 hover:text-black transition font-medium"
                           >
                             {post.author?.split('@')[0] || 'Unknown'}
                           </Link>
-                          <span className="text-[#5E7B6F]">·</span>
-                          <span className="text-sm text-[#5E7B6F]">
+                          <span className="text-gray-400">·</span>
+                          <span className="text-sm text-gray-500">
                             {calculateReadTime(post.content)} min read
                           </span>
                         </div>
-                          
+                        
                         <Link href={`/post/${post.id}`}>
-                          <h2 className={`font-bold text-[#1A3D2F] group-hover:text-[#2D5038] transition mb-2 cursor-pointer ${
-                            index === 0 ? 'text-2xl' : 'text-xl'
-                          }`}>
+                          <h2 className="text-xl font-bold text-gray-900 group-hover:text-black transition mb-2 cursor-pointer line-clamp-2">
                             {post.title}
                           </h2>
                         </Link>
                         
                         <Link href={`/post/${post.id}`}>
-                          <p className="text-[#5E7B6F] mb-4 line-clamp-2 cursor-pointer">
+                          <p className="text-gray-600 mb-4 line-clamp-2 cursor-pointer">
                             {post.content.replace(/<[^>]+>/g, "").slice(0, 150)}...
                           </p>
                         </Link>
                         
-                        {post.category && (
-                          <span className="inline-block px-2 py-1 bg-[#E0D8CC] text-[#3E6B4B] text-xs rounded-full mb-2 capitalize">
-                            {post.category}
-                          </span>
-                        )}
-                          
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4 text-sm text-[#5E7B6F]">
-                            <span className="flex items-center gap-1">
+                          <div className="flex items-center gap-4">
+                            {post.category && (
+                              <span className="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                                {post.category}
+                              </span>
+                            )}
+                            <span className="flex items-center gap-1 text-sm text-gray-500">
                               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
                               </svg>
@@ -283,14 +298,12 @@ export default function HomePage() {
                       
                       {post.imageUrl && (
                         <Link href={`/post/${post.id}`}>
-                          <div className={`flex-shrink-0 overflow-hidden rounded cursor-pointer ${
-                            index === 0 ? 'w-32 h-32' : 'w-24 h-24'
-                          }`}>
+                          <div className="w-24 h-24 flex-shrink-0 overflow-hidden cursor-pointer">
                             <Image
                               src={post.imageUrl}
                               alt={post.title}
-                              width={index === 0 ? 128 : 96}
-                              height={index === 0 ? 128 : 96}
+                              width={96}
+                              height={96}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             />
                           </div>
@@ -306,43 +319,13 @@ export default function HomePage() {
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="sticky top-8">
-              <div className="bg-white rounded-lg p-6 border border-[#E0D8CC] mb-6">
-                <h3 className="font-bold text-[#1A3D2F] mb-4">Categories</h3>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => filterByCategory("")}
-                    className={`px-3 py-1 rounded-full text-sm transition ${
-                      selectedCategory === "" 
-                        ? "bg-[#3E6B4B] text-white" 
-                        : "bg-[#E0D8CC] text-[#3E6B4B] hover:bg-[#D6CBBE]"
-                    }`}
-                  >
-                    All
-                  </button>
-                  {['technology', 'lifestyle', 'business', 'health', 'travel', 'food', 'general'].map((category) => (
-                    <button
-                      key={category}
-                      onClick={() => filterByCategory(category)}
-                      className={`px-3 py-1 rounded-full text-sm transition capitalize ${
-                        selectedCategory === category 
-                          ? "bg-[#3E6B4B] text-white" 
-                          : "bg-[#E0D8CC] text-[#3E6B4B] hover:bg-[#D6CBBE]"
-                      }`}
-                    >
-                      {category}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
               {currentUser && (
-                <div className="bg-white rounded-lg p-6 border border-[#E0D8CC]">
-                  <h3 className="font-bold text-[#1A3D2F] mb-4">Who to follow</h3>
-                  <div className="space-y-3">
+                <div className="bg-white border border-gray-200 rounded p-6 mb-6">
+                  <h3 className="font-semibold text-gray-900 mb-4">Who to follow</h3>
+                  <div className="space-y-4">
                     {posts
                       .filter(post => post.author && post.author !== currentUser.email)
                       .reduce((unique, post) => {
-                        // Remove duplicates by author
                         if (!unique.find(p => p.author === post.author)) {
                           unique.push(post);
                         }
@@ -351,18 +334,17 @@ export default function HomePage() {
                       .slice(0, 3)
                       .map((post) => {
                         const authorUsername = post.author?.split('@')[0] || 'unknown';
-                        // Check if we're already following this author
                         const isFollowingAuthor = followingEmails.includes(post.author);
                         
                         return (
                           <div key={post.author} className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-[#3E6B4B] rounded-full flex items-center justify-center text-white text-sm font-bold">
+                            <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center text-white text-sm font-medium">
                               {post.author?.charAt(0)?.toUpperCase() || 'A'}
                             </div>
                             <div className="flex-1">
                               <Link 
                                 href={`/profile/${authorUsername}`}
-                                className="text-sm font-medium text-[#1A3D2F] hover:text-[#3E6B4B] transition"
+                                className="text-sm font-medium text-gray-900 hover:text-black transition"
                               >
                                 {authorUsername}
                               </Link>
@@ -371,8 +353,8 @@ export default function HomePage() {
                               onClick={() => toggleFollowFromHome(post.author)}
                               className={`px-3 py-1 text-xs rounded-full transition ${
                                 isFollowingAuthor 
-                                  ? "bg-gray-200 text-[#5E7B6F] hover:bg-gray-300" 
-                                  : "bg-[#3E6B4B] text-white hover:bg-[#2D5038]"
+                                  ? "bg-gray-100 text-gray-600 hover:bg-gray-200" 
+                                  : "bg-black text-white hover:bg-gray-800"
                               }`}
                             >
                               {isFollowingAuthor ? "Following" : "Follow"}
@@ -384,6 +366,20 @@ export default function HomePage() {
                   </div>
                 </div>
               )}
+              
+              <div className="bg-white border border-gray-200 rounded p-6">
+                <h3 className="font-semibold text-gray-900 mb-4">Recommended topics</h3>
+                <div className="flex flex-wrap gap-2">
+                  {['Technology', 'Programming', 'Data Science', 'Machine Learning', 'Design', 'Productivity'].map((topic) => (
+                    <span
+                      key={topic}
+                      className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 cursor-pointer transition"
+                    >
+                      {topic}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>

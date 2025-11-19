@@ -10,6 +10,8 @@ import {
   orderBy,
   deleteDoc,
   doc,
+  updateDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 import Link from "next/link";
 import { Post } from "../../types";
@@ -40,6 +42,15 @@ export default function DraftsPage() {
   const deleteDraft = async (id: string) => {
     if (confirm("Are you sure you want to delete this draft?")) {
       await deleteDoc(doc(db, "posts", id));
+    }
+  };
+
+  const publishDraft = async (id: string) => {
+    if (confirm("Are you sure you want to publish this draft?")) {
+      await updateDoc(doc(db, "posts", id), {
+        status: "published",
+        updatedAt: serverTimestamp()
+      });
     }
   };
 
@@ -104,6 +115,12 @@ export default function DraftsPage() {
                   >
                     Edit
                   </Link>
+                  <button
+                    onClick={() => publishDraft(draft.id)}
+                    className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition"
+                  >
+                    Publish
+                  </button>
                   <button
                     onClick={() => deleteDraft(draft.id)}
                     className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 transition"

@@ -32,6 +32,7 @@ export default function RootLayout({ children }) {
 
               <Link href="/" className="hover:underline">Home</Link>
               <Link href="/write" className="hover:underline">Write</Link>
+              {user && <Link href="/draft" className="hover:underline">Drafts</Link>}
 
               {/* IF USER LOGGED IN → SHOW NAME + LOGOUT */}
               {user ? (

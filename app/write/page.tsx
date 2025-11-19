@@ -18,8 +18,6 @@ export default function WritePage() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [status, setStatus] = useState("draft");
-  const [imageUrl, setImageUrl] = useState("");
-  const [tags, setTags] = useState("");
   const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -38,8 +36,6 @@ export default function WritePage() {
         const postData = postDoc.data() as Post;
         setTitle(postData.title);
         setContent(postData.content);
-        setImageUrl(postData.imageUrl || "");
-        setTags(postData.tags?.join(", ") || "");
         setCategory(postData.category || "");
       }
     } catch (error) {
@@ -61,11 +57,9 @@ export default function WritePage() {
         title,
         content,
         status,
-        imageUrl: imageUrl || "",
+        category: category || "general",
         author: auth.currentUser?.email || "Unknown",
         authorId: auth.currentUser?.uid || "",
-        tags: tags.split(",").map(tag => tag.trim()).filter(tag => tag),
-        category: category || undefined,
         updatedAt: serverTimestamp(),
       };
 
@@ -76,15 +70,12 @@ export default function WritePage() {
           ...postData,
           createdAt: serverTimestamp(),
           likes: [],
-          views: 0,
         });
       }
 
       // reset
       setTitle("");
       setContent("");
-      setImageUrl("");
-      setTags("");
       setCategory("");
 
       if (status === "published") {
@@ -113,36 +104,20 @@ export default function WritePage() {
         onChange={(e) => setTitle(e.target.value)}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <input
-          type="url"
-          className="w-full p-3 border rounded focus:ring-2 focus:ring-[#3E6B4B] focus:border-transparent"
-          placeholder="Cover image URL"
-          value={imageUrl}
-          onChange={(e) => setImageUrl(e.target.value)}
-        />
-        <select
-          className="w-full p-3 border rounded focus:ring-2 focus:ring-[#3E6B4B] focus:border-transparent"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-        >
-          <option value="">Select Category</option>
-          <option value="technology">Technology</option>
-          <option value="lifestyle">Lifestyle</option>
-          <option value="business">Business</option>
-          <option value="health">Health</option>
-          <option value="travel">Travel</option>
-          <option value="food">Food</option>
-          <option value="other">Other</option>
-        </select>
-      </div>
-
-      <input
+      <select
         className="w-full p-3 border rounded mb-4 focus:ring-2 focus:ring-[#3E6B4B] focus:border-transparent"
-        placeholder="Tags (comma separated)"
-        value={tags}
-        onChange={(e) => setTags(e.target.value)}
-      />
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+      >
+        <option value="">Select Category</option>
+        <option value="technology">Technology</option>
+        <option value="lifestyle">Lifestyle</option>
+        <option value="business">Business</option>
+        <option value="health">Health</option>
+        <option value="travel">Travel</option>
+        <option value="food">Food</option>
+        <option value="general">General</option>
+      </select>
 
       {/* Editor */}
       <JoditEditor ref={editor} value={content} onChange={setContent} />

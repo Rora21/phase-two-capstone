@@ -16,6 +16,8 @@ import { Post } from "../types";
 export default function HomePage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
 
   useEffect(() => {
     const q = query(
@@ -25,7 +27,9 @@ export default function HomePage() {
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      setPosts(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Post)));
+      const postsData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Post));
+      setPosts(postsData);
+      setFilteredPosts(postsData);
       setLoading(false);
     });
 
@@ -36,6 +40,15 @@ export default function HomePage() {
     const wordsPerMinute = 200;
     const words = content.replace(/<[^>]+>/g, "").split(/\s+/).length;
     return Math.ceil(words / wordsPerMinute);
+  };
+
+  const filterByCategory = (category: string) => {
+    setSelectedCategory(category);
+    if (category === "") {
+      setFilteredPosts(posts);
+    } else {
+      setFilteredPosts(posts.filter(post => post.category === category));
+    }
   };
 
   return (
@@ -81,7 +94,7 @@ export default function HomePage() {
               </div>
             ) : (
               <div className="space-y-8">
-                {posts.map((post, index) => (
+                {filteredPosts.map((post, index) => (
                   <article key={post.id} className="group">
                     <div className={`flex gap-6 ${index === 0 ? 'pb-8 border-b border-[#E0D8CC]' : ''}`}>
                       <div className="flex-1">
@@ -114,6 +127,12 @@ export default function HomePage() {
                             {post.content.replace(/<[^>]+>/g, "").slice(0, 150)}...
                           </p>
                         </Link>
+                        
+                        {post.category && (
+                          <span className="inline-block px-2 py-1 bg-[#E0D8CC] text-[#3E6B4B] text-xs rounded-full mb-2 capitalize">
+                            {post.category}
+                          </span>
+                        )}
                           
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-4 text-sm text-[#5E7B6F]">
@@ -153,15 +172,30 @@ export default function HomePage() {
           <div className="lg:col-span-1">
             <div className="sticky top-8">
               <div className="bg-white rounded-lg p-6 border border-[#E0D8CC] mb-6">
-                <h3 className="font-bold text-[#1A3D2F] mb-4">Recommended topics</h3>
+                <h3 className="font-bold text-[#1A3D2F] mb-4">Categories</h3>
                 <div className="flex flex-wrap gap-2">
-                  {['Technology', 'Lifestyle', 'Business', 'Health', 'Travel', 'Food'].map((topic) => (
-                    <span
-                      key={topic}
-                      className="px-3 py-1 bg-[#E0D8CC] text-[#3E6B4B] rounded-full text-sm hover:bg-[#D6CBBE] cursor-pointer transition"
+                  <button
+                    onClick={() => filterByCategory("")}
+                    className={`px-3 py-1 rounded-full text-sm transition ${
+                      selectedCategory === "" 
+                        ? "bg-[#3E6B4B] text-white" 
+                        : "bg-[#E0D8CC] text-[#3E6B4B] hover:bg-[#D6CBBE]"
+                    }`}
+                  >
+                    All
+                  </button>
+                  {['technology', 'lifestyle', 'business', 'health', 'travel', 'food', 'general'].map((category) => (
+                    <button
+                      key={category}
+                      onClick={() => filterByCategory(category)}
+                      className={`px-3 py-1 rounded-full text-sm transition capitalize ${
+                        selectedCategory === category 
+                          ? "bg-[#3E6B4B] text-white" 
+                          : "bg-[#E0D8CC] text-[#3E6B4B] hover:bg-[#D6CBBE]"
+                      }`}
                     >
-                      {topic}
-                    </span>
+                      {category}
+                    </button>
                   ))}
                 </div>
               </div>

@@ -1,10 +1,14 @@
 "use client";
-
-import { useAuth } from "../hooks/useauth";
+import { UseAuth } from "../hooks/useAuth";
 import { useRouter } from "next/navigation";
+import { ReactNode } from "react";
 
-export default function ProtectedRoute({ children }) {
-  const { user, loading } = useAuth();
+interface ProtectedRouteProps {
+  children: ReactNode;
+}
+
+export default function ProtectedRoute({ children }: ProtectedRouteProps) {
+  const { user, loading } = UseAuth();
   const router = useRouter();
 
   if (loading) return <p>Loading...</p>;

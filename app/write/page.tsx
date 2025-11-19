@@ -6,7 +6,7 @@ import { db, auth } from "../lib/firebase";
 import { addDoc, collection, serverTimestamp, doc, getDoc, updateDoc } from "firebase/firestore";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Post } from "../../types";
-import { useAuth } from "../hooks/useAuth";
+import { UseAuth } from "../hooks/useAuth";
 
 const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
 
@@ -15,7 +15,7 @@ export default function WritePage() {
   const searchParams = useSearchParams();
   const editId = searchParams.get('edit');
   const editor = useRef<any>(null);
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = UseAuth();
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");

@@ -15,12 +15,12 @@ import {
 } from "firebase/firestore";
 import Link from "next/link";
 import { Post } from "../../types";
-import { useAuth } from "../hooks/useAuth";
+import { UseAuth } from "../hooks/useAuth";
 
 export default function DraftsPage() {
   const [drafts, setDrafts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user } = UseAuth();
 
   useEffect(() => {
     if (!user) return;

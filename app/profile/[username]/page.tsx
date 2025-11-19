@@ -26,6 +26,8 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
   const [activeTab, setActiveTab] = useState("stories");
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [followers, setFollowers] = useState<any[]>([]);
+  const [following, setFollowing] = useState<any[]>([]);
 
   useEffect(() => {
     loadUserProfile();
@@ -52,6 +54,7 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
         if (!snapshot.empty) {
           const userData = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
           setUser(userData);
+          loadFollowersAndFollowing(userData);
         }
         setLoading(false);
       });
@@ -103,6 +106,34 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
       }
     } catch (error) {
       console.error("Error toggling follow:", error);
+    }
+  };
+
+  const loadFollowersAndFollowing = async (userData: any) => {
+    try {
+      // Load followers
+      if (userData.followers && userData.followers.length > 0) {
+        const followersData = await Promise.all(
+          userData.followers.map(async (followerId: string) => {
+            const followerDoc = await getDoc(doc(db, "users", followerId));
+            return followerDoc.exists() ? { id: followerId, ...followerDoc.data() } : null;
+          })
+        );
+        setFollowers(followersData.filter(Boolean));
+      }
+
+      // Load following
+      if (userData.following && userData.following.length > 0) {
+        const followingData = await Promise.all(
+          userData.following.map(async (followingId: string) => {
+            const followingDoc = await getDoc(doc(db, "users", followingId));
+            return followingDoc.exists() ? { id: followingId, ...followingDoc.data() } : null;
+          })
+        );
+        setFollowing(followingData.filter(Boolean));
+      }
+    } catch (error) {
+      console.error("Error loading followers/following:", error);
     }
   };
 
@@ -169,8 +200,18 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
               
               <div className="flex items-center gap-6 text-sm text-[#5E7B6F]">
                 <span>{posts.length} Stories</span>
-                <span>{user.followersCount || 0} Followers</span>
-                <span>{user.followingCount || 0} Following</span>
+                <button 
+                  onClick={() => setActiveTab("followers")}
+                  className="hover:text-[#3E6B4B] transition"
+                >
+                  {user.followers?.length || 0} Followers
+                </button>
+                <button 
+                  onClick={() => setActiveTab("following")}
+                  className="hover:text-[#3E6B4B] transition"
+                >
+                  {user.following?.length || 0} Following
+                </button>
               </div>
               
               {currentUser && currentUser.uid !== user.uid && (
@@ -205,6 +246,26 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
               }`}
             >
               Stories
+            </button>
+            <button
+              onClick={() => setActiveTab("followers")}
+              className={`py-4 border-b-2 transition ${
+                activeTab === "followers"
+                  ? "border-[#3E6B4B] text-[#1A3D2F] font-medium"
+                  : "border-transparent text-[#5E7B6F] hover:text-[#1A3D2F]"
+              }`}
+            >
+              Followers
+            </button>
+            <button
+              onClick={() => setActiveTab("following")}
+              className={`py-4 border-b-2 transition ${
+                activeTab === "following"
+                  ? "border-[#3E6B4B] text-[#1A3D2F] font-medium"
+                  : "border-transparent text-[#5E7B6F] hover:text-[#1A3D2F]"
+              }`}
+            >
+              Following
             </button>
             <button
               onClick={() => setActiveTab("about")}
@@ -269,6 +330,66 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
                       </div>
                     </Link>
                   </article>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "followers" && (
+          <div>
+            <h3 className="text-xl font-bold text-[#1A3D2F] mb-6">Followers ({followers.length})</h3>
+            {followers.length === 0 ? (
+              <p className="text-[#5E7B6F]">No followers yet.</p>
+            ) : (
+              <div className="space-y-4">
+                {followers.map((follower) => (
+                  <div key={follower.id} className="flex items-center gap-4 p-4 bg-white rounded-lg border border-[#E0D8CC]">
+                    <div className="w-12 h-12 bg-[#3E6B4B] rounded-full flex items-center justify-center text-white font-bold">
+                      {follower.displayName?.charAt(0)?.toUpperCase() || follower.email?.charAt(0)?.toUpperCase() || 'U'}
+                    </div>
+                    <div className="flex-1">
+                      <Link 
+                        href={`/profile/${follower.email?.split('@')[0] || 'unknown'}`}
+                        className="font-medium text-[#1A3D2F] hover:text-[#3E6B4B] transition"
+                      >
+                        {follower.displayName || follower.email?.split('@')[0] || 'Unknown'}
+                      </Link>
+                      {follower.bio && (
+                        <p className="text-sm text-[#5E7B6F] mt-1">{follower.bio}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "following" && (
+          <div>
+            <h3 className="text-xl font-bold text-[#1A3D2F] mb-6">Following ({following.length})</h3>
+            {following.length === 0 ? (
+              <p className="text-[#5E7B6F]">Not following anyone yet.</p>
+            ) : (
+              <div className="space-y-4">
+                {following.map((followedUser) => (
+                  <div key={followedUser.id} className="flex items-center gap-4 p-4 bg-white rounded-lg border border-[#E0D8CC]">
+                    <div className="w-12 h-12 bg-[#3E6B4B] rounded-full flex items-center justify-center text-white font-bold">
+                      {followedUser.displayName?.charAt(0)?.toUpperCase() || followedUser.email?.charAt(0)?.toUpperCase() || 'U'}
+                    </div>
+                    <div className="flex-1">
+                      <Link 
+                        href={`/profile/${followedUser.email?.split('@')[0] || 'unknown'}`}
+                        className="font-medium text-[#1A3D2F] hover:text-[#3E6B4B] transition"
+                      >
+                        {followedUser.displayName || followedUser.email?.split('@')[0] || 'Unknown'}
+                      </Link>
+                      {followedUser.bio && (
+                        <p className="text-sm text-[#5E7B6F] mt-1">{followedUser.bio}</p>
+                      )}
+                    </div>
+                  </div>
                 ))}
               </div>
             )}

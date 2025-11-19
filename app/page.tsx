@@ -14,6 +14,8 @@ import {
   updateDoc,
   arrayUnion,
   arrayRemove,
+  setDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 import Link from "next/link";
 import Image from "next/image";
@@ -26,6 +28,7 @@ export default function HomePage() {
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [followingList, setFollowingList] = useState<string[]>([]);
+  const [followingEmails, setFollowingEmails] = useState<string[]>([]);
 
   useEffect(() => {
     const q = query(
@@ -74,7 +77,21 @@ export default function HomePage() {
     try {
       const userDoc = await getDoc(doc(db, "users", userId));
       if (userDoc.exists()) {
-        setFollowingList(userDoc.data().following || []);
+        const following = userDoc.data().following || [];
+        setFollowingList(following);
+        
+        // Load the emails of users we're following
+        if (following.length > 0) {
+          const followingUsersData = await Promise.all(
+            following.map(async (followingId: string) => {
+              const followingUserDoc = await getDoc(doc(db, "users", followingId));
+              return followingUserDoc.exists() ? followingUserDoc.data().email : null;
+            })
+          );
+          setFollowingEmails(followingUsersData.filter(Boolean));
+        } else {
+          setFollowingEmails([]);
+        }
       }
     } catch (error) {
       console.error("Error loading following list:", error);
@@ -82,23 +99,43 @@ export default function HomePage() {
   };
 
   const toggleFollowFromHome = async (authorEmail: string) => {
-    if (!currentUser) return;
+    if (!currentUser || !authorEmail) {
+      alert("Please login to follow users.");
+      return;
+    }
     
     try {
       // Find the author's user document
-      const authorQuery = query(collection(db, "users"), where("email", "==", authorEmail));
+      const usersRef = collection(db, "users");
+      const authorQuery = query(usersRef, where("email", "==", authorEmail));
       const authorSnapshot = await getDocs(authorQuery);
       
       if (!authorSnapshot.empty) {
         const authorDoc = authorSnapshot.docs[0];
         const authorId = authorDoc.id;
         
+        // Get current user document
         const currentUserRef = doc(db, "users", currentUser.uid);
-        const authorRef = doc(db, "users", authorId);
+        const currentUserDoc = await getDoc(currentUserRef);
         
-        const isCurrentlyFollowing = followingList.includes(authorId);
+        // Create user document if it doesn't exist
+        if (!currentUserDoc.exists()) {
+          await setDoc(currentUserRef, {
+            uid: currentUser.uid,
+            email: currentUser.email,
+            displayName: currentUser.displayName || currentUser.email?.split('@')[0],
+            followers: [],
+            following: [],
+            joinedAt: serverTimestamp()
+          });
+        }
+        
+        const currentFollowing = currentUserDoc.exists() ? (currentUserDoc.data().following || []) : [];
+        const authorRef = doc(db, "users", authorId);
+        const isCurrentlyFollowing = currentFollowing.includes(authorId);
         
         if (isCurrentlyFollowing) {
+          // Unfollow
           await updateDoc(currentUserRef, {
             following: arrayRemove(authorId)
           });
@@ -106,7 +143,9 @@ export default function HomePage() {
             followers: arrayRemove(currentUser.uid)
           });
           setFollowingList(prev => prev.filter(id => id !== authorId));
+          setFollowingEmails(prev => prev.filter(email => email !== authorEmail));
         } else {
+          // Follow
           await updateDoc(currentUserRef, {
             following: arrayUnion(authorId)
           });
@@ -114,10 +153,36 @@ export default function HomePage() {
             followers: arrayUnion(currentUser.uid)
           });
           setFollowingList(prev => [...prev, authorId]);
+          setFollowingEmails(prev => [...prev, authorEmail]);
         }
+        
+        // Reload following list to update UI
+        await loadFollowingList(currentUser.uid);
+        
+      } else {
+        console.log("Author not found in users collection. Creating author profile...");
+        // Create author profile if it doesn't exist
+        const newAuthorRef = doc(collection(db, "users"));
+        await setDoc(newAuthorRef, {
+          email: authorEmail,
+          displayName: authorEmail.split('@')[0],
+          followers: [currentUser.uid],
+          following: [],
+          joinedAt: serverTimestamp()
+        });
+        
+        // Update current user's following list
+        const currentUserRef = doc(db, "users", currentUser.uid);
+        await updateDoc(currentUserRef, {
+          following: arrayUnion(newAuthorRef.id)
+        });
+        
+        setFollowingList(prev => [...prev, newAuthorRef.id]);
+        setFollowingEmails(prev => [...prev, authorEmail]);
       }
     } catch (error) {
       console.error("Error toggling follow:", error);
+      alert("Error following user. Please try again.");
     }
   };
 
@@ -275,12 +340,22 @@ export default function HomePage() {
                   <h3 className="font-bold text-[#1A3D2F] mb-4">Who to follow</h3>
                   <div className="space-y-3">
                     {posts
-                      .filter(post => post.author !== currentUser.email)
+                      .filter(post => post.author && post.author !== currentUser.email)
+                      .reduce((unique, post) => {
+                        // Remove duplicates by author
+                        if (!unique.find(p => p.author === post.author)) {
+                          unique.push(post);
+                        }
+                        return unique;
+                      }, [])
                       .slice(0, 3)
                       .map((post) => {
                         const authorUsername = post.author?.split('@')[0] || 'unknown';
+                        // Check if we're already following this author
+                        const isFollowingAuthor = followingEmails.includes(post.author);
+                        
                         return (
-                          <div key={post.id} className="flex items-center gap-3">
+                          <div key={post.author} className="flex items-center gap-3">
                             <div className="w-8 h-8 bg-[#3E6B4B] rounded-full flex items-center justify-center text-white text-sm font-bold">
                               {post.author?.charAt(0)?.toUpperCase() || 'A'}
                             </div>
@@ -294,9 +369,13 @@ export default function HomePage() {
                             </div>
                             <button 
                               onClick={() => toggleFollowFromHome(post.author)}
-                              className="text-sm text-[#3E6B4B] hover:text-[#2D5038] font-medium"
+                              className={`px-3 py-1 text-xs rounded-full transition ${
+                                isFollowingAuthor 
+                                  ? "bg-gray-200 text-[#5E7B6F] hover:bg-gray-300" 
+                                  : "bg-[#3E6B4B] text-white hover:bg-[#2D5038]"
+                              }`}
                             >
-                              Follow
+                              {isFollowingAuthor ? "Following" : "Follow"}
                             </button>
                           </div>
                         );

@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, Suspense } from "react";
 import { db, auth } from "../lib/firebase";
 import { addDoc, collection, serverTimestamp, doc, getDoc, updateDoc } from "firebase/firestore";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -10,7 +10,7 @@ import { UseAuth } from "../hooks/useAuth";
 
 const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
 
-export default function WritePage() {
+function WritePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get('edit');
@@ -219,5 +219,17 @@ export default function WritePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function WritePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="animate-pulse text-gray-500 text-lg">Loading...</div>
+      </div>
+    }>
+      <WritePageContent />
+    </Suspense>
   );
 }

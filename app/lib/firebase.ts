@@ -5,13 +5,13 @@ import { getStorage } from "firebase/storage";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCnTzoF72RoZyZuU3AbxemZvzOa_FHAjPg",
-  authDomain: "phase-two-capstone.firebaseapp.com",
-  projectId: "phase-two-capstone",
-  storageBucket: "phase-two-capstone.firebasestorage.app.com",
-  messagingSenderId: "602748338308",
-  appId: "1:602748338308:web:2729970d1254e54260c2d1",
-  measurementId: "G-D8FVGNEP58"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase

@@ -325,12 +325,12 @@ export default function HomePage() {
                   <div className="space-y-4">
                     {posts
                       .filter(post => post.author && post.author !== currentUser.email)
-                      .reduce((unique, post) => {
+                      .reduce((unique: Post[], post) => {
                         if (!unique.find(p => p.author === post.author)) {
                           unique.push(post);
                         }
                         return unique;
-                      }, [])
+                      }, [] as Post[])
                       .slice(0, 3)
                       .map((post) => {
                         const authorUsername = post.author?.split('@')[0] || 'unknown';

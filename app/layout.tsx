@@ -3,11 +3,11 @@
 import "./globals.css";
 import { useEffect, useState } from "react";
 import { auth } from "./lib/firebase";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import Link from "next/link";
 
-export default function RootLayout({ children }) {
-  const [user, setUser] = useState(null);
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {

@@ -31,7 +31,7 @@ export default function RootLayout({ children }) {
             <div className="flex gap-6 text-[#1A3D2F] items-center">
 
               <Link href="/" className="hover:underline">Home</Link>
-              <Link href="/write" className="hover:underline">Write</Link>
+              {user && <Link href="/write" className="hover:underline">Write</Link>}
               {user && <Link href="/draft" className="hover:underline">Drafts</Link>}
 
               {/* IF USER LOGGED IN → SHOW NAME + LOGOUT */}

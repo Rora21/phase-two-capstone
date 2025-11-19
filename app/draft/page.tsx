@@ -28,7 +28,8 @@ export default function DraftsPage() {
     const q = query(
       collection(db, "posts"),
       where("status", "==", "draft"),
-      where("author", "==", user.email)
+      where("author", "==", user.email),
+      where("authorId", "==", user.uid)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -57,7 +58,24 @@ export default function DraftsPage() {
   if (!user) {
     return (
       <div className="max-w-4xl mx-auto py-12 px-4 text-center">
-        <p className="text-[#5E7B6F]">Please log in to view your drafts.</p>
+        <div className="bg-white rounded-lg p-8 border border-[#E0D8CC]">
+          <h2 className="text-xl font-bold text-[#1A3D2F] mb-4">Authentication Required</h2>
+          <p className="text-[#5E7B6F] mb-6">Please log in to view your drafts.</p>
+          <div className="space-x-4">
+            <Link 
+              href="/login"
+              className="px-6 py-3 bg-[#3E6B4B] text-white rounded-lg hover:bg-[#2D5038] transition"
+            >
+              Login
+            </Link>
+            <Link 
+              href="/signup"
+              className="px-6 py-3 border border-[#3E6B4B] text-[#3E6B4B] rounded-lg hover:bg-[#E0D8CC] transition"
+            >
+              Sign Up
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }

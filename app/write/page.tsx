@@ -6,6 +6,7 @@ import { db, auth } from "../lib/firebase";
 import { addDoc, collection, serverTimestamp, doc, getDoc, updateDoc } from "firebase/firestore";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Post } from "../../types";
+import { useAuth } from "../hooks/useAuth";
 
 const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
 
@@ -14,6 +15,7 @@ export default function WritePage() {
   const searchParams = useSearchParams();
   const editId = searchParams.get('edit');
   const editor = useRef<any>(null);
+  const { user, loading: authLoading } = useAuth();
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -23,11 +25,49 @@ export default function WritePage() {
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    if (editId) {
+    if (!authLoading && !user) {
+      router.push('/login');
+      return;
+    }
+    
+    if (editId && user) {
       setIsEditing(true);
       loadPost(editId);
     }
-  }, [editId]);
+  }, [editId, user, authLoading, router]);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#F5F1E8] flex items-center justify-center">
+        <div className="animate-pulse text-[#5E7B6F] text-lg">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#F5F1E8] flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-[#1A3D2F] mb-4">Authentication Required</h1>
+          <p className="text-[#5E7B6F] mb-6">You need to be logged in to write a blog post.</p>
+          <div className="space-x-4">
+            <button 
+              onClick={() => router.push('/login')}
+              className="px-6 py-3 bg-[#3E6B4B] text-white rounded-lg hover:bg-[#2D5038] transition"
+            >
+              Login
+            </button>
+            <button 
+              onClick={() => router.push('/signup')}
+              className="px-6 py-3 border border-[#3E6B4B] text-[#3E6B4B] rounded-lg hover:bg-[#E0D8CC] transition"
+            >
+              Sign Up
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const loadPost = async (postId: string) => {
     try {
@@ -45,6 +85,12 @@ export default function WritePage() {
   };
 
   const handleSave = async () => {
+    if (!user) {
+      alert("Please login to save posts.");
+      router.push('/login');
+      return;
+    }
+
     if (!title || !content) {
       alert("Title & content required!");
       return;
@@ -58,8 +104,8 @@ export default function WritePage() {
         content,
         status,
         category: category || "general",
-        author: auth.currentUser?.email || "Unknown",
-        authorId: auth.currentUser?.uid || "",
+        author: user.email || "Unknown",
+        authorId: user.uid || "",
         updatedAt: serverTimestamp(),
       };
 

@@ -90,9 +90,12 @@ export default function HomePage() {
                             <div className="w-6 h-6 bg-[#3E6B4B] rounded-full flex items-center justify-center text-white text-xs font-bold">
                               {post.author?.charAt(0)?.toUpperCase() || 'A'}
                             </div>
-                            <span className="text-sm text-[#5E7B6F]">
+                            <Link 
+                              href={`/profile/${post.author?.split('@')[0] || 'unknown'}`}
+                              className="text-sm text-[#5E7B6F] hover:text-[#3E6B4B] transition"
+                            >
                               {post.author?.split('@')[0] || 'Unknown'}
-                            </span>
+                            </Link>
                             <span className="text-[#5E7B6F]">·</span>
                             <span className="text-sm text-[#5E7B6F]">
                               {calculateReadTime(post.content)} min read
@@ -168,9 +171,12 @@ export default function HomePage() {
                         {post.author?.charAt(0)?.toUpperCase() || 'A'}
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-[#1A3D2F]">
+                        <Link 
+                          href={`/profile/${post.author?.split('@')[0] || 'unknown'}`}
+                          className="text-sm font-medium text-[#1A3D2F] hover:text-[#3E6B4B] transition"
+                        >
                           {post.author?.split('@')[0] || 'Unknown'}
-                        </p>
+                        </Link>
                       </div>
                       <button className="text-sm text-[#3E6B4B] hover:text-[#2D5038] font-medium">
                         Follow

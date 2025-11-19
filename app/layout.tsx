@@ -36,9 +36,12 @@ export default function RootLayout({ children }) {
               {/* IF USER LOGGED IN → SHOW NAME + LOGOUT */}
               {user ? (
                 <div className="flex items-center gap-4">
-                  <span className="font-semibold">
+                  <Link 
+                    href={`/profile/${user.email?.split("@")[0]}`}
+                    className="font-semibold hover:underline"
+                  >
                     {user.email?.split("@")[0]}
-                  </span>
+                  </Link>
 
                   <button
                     onClick={() => signOut(auth)}

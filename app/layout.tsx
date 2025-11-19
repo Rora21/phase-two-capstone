@@ -19,6 +19,19 @@ export default function RootLayout({ children }) {
 
   return (
     <html lang="en">
+      <head>
+        <title>Aurie - Where Stories Come to Life</title>
+        <meta name="description" content="Discover and share compelling stories, ideas, and insights on Aurie. A modern publishing platform for writers and readers." />
+        <meta name="keywords" content="writing, blogging, stories, articles, publishing, medium, aurie" />
+        <meta name="author" content="Aurie" />
+        <meta property="og:title" content="Aurie - Where Stories Come to Life" />
+        <meta property="og:description" content="Discover and share compelling stories, ideas, and insights on Aurie." />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Aurie - Where Stories Come to Life" />
+        <meta name="twitter:description" content="Discover and share compelling stories, ideas, and insights on Aurie." />
+        <link rel="icon" href="/favicon.ico" />
+      </head>
       <body className="bg-white text-gray-900 font-sans">
         
         {/* NAVBAR */}
@@ -26,7 +39,7 @@ export default function RootLayout({ children }) {
           <nav className="flex items-center justify-between px-6 py-3 max-w-7xl mx-auto">
             <div className="flex items-center gap-8">
               <Link href="/" className="text-2xl font-bold text-black">
-                Medium
+                Aurie
               </Link>
               
               <div className="hidden md:flex items-center gap-6 text-sm text-gray-600">
@@ -76,7 +89,7 @@ export default function RootLayout({ children }) {
         {/* FOOTER */}
         <footer className="border-t border-gray-200 bg-white py-8 mt-16">
           <div className="max-w-7xl mx-auto px-6 text-center">
-            <p className="text-sm text-gray-500">© {new Date().getFullYear()} Medium Clone</p>
+            <p className="text-sm text-gray-500">© {new Date().getFullYear()} Aurie. Where stories come to life.</p>
           </div>
         </footer>
       </body>

@@ -83,49 +83,53 @@ export default function HomePage() {
               <div className="space-y-8">
                 {posts.map((post, index) => (
                   <article key={post.id} className="group">
-                    <Link href={`/post/${post.id}`} className="block">
-                      <div className={`flex gap-6 ${index === 0 ? 'pb-8 border-b border-[#E0D8CC]' : ''}`}>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-3">
-                            <div className="w-6 h-6 bg-[#3E6B4B] rounded-full flex items-center justify-center text-white text-xs font-bold">
-                              {post.author?.charAt(0)?.toUpperCase() || 'A'}
-                            </div>
-                            <Link 
-                              href={`/profile/${post.author?.split('@')[0] || 'unknown'}`}
-                              className="text-sm text-[#5E7B6F] hover:text-[#3E6B4B] transition"
-                            >
-                              {post.author?.split('@')[0] || 'Unknown'}
-                            </Link>
-                            <span className="text-[#5E7B6F]">·</span>
-                            <span className="text-sm text-[#5E7B6F]">
-                              {calculateReadTime(post.content)} min read
-                            </span>
+                    <div className={`flex gap-6 ${index === 0 ? 'pb-8 border-b border-[#E0D8CC]' : ''}`}>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-6 h-6 bg-[#3E6B4B] rounded-full flex items-center justify-center text-white text-xs font-bold">
+                            {post.author?.charAt(0)?.toUpperCase() || 'A'}
                           </div>
+                          <Link 
+                            href={`/profile/${post.author?.split('@')[0] || 'unknown'}`}
+                            className="text-sm text-[#5E7B6F] hover:text-[#3E6B4B] transition"
+                          >
+                            {post.author?.split('@')[0] || 'Unknown'}
+                          </Link>
+                          <span className="text-[#5E7B6F]">·</span>
+                          <span className="text-sm text-[#5E7B6F]">
+                            {calculateReadTime(post.content)} min read
+                          </span>
+                        </div>
                           
-                          <h2 className={`font-bold text-[#1A3D2F] group-hover:text-[#2D5038] transition mb-2 ${
+                        <Link href={`/post/${post.id}`}>
+                          <h2 className={`font-bold text-[#1A3D2F] group-hover:text-[#2D5038] transition mb-2 cursor-pointer ${
                             index === 0 ? 'text-2xl' : 'text-xl'
                           }`}>
                             {post.title}
                           </h2>
-                          
-                          <p className="text-[#5E7B6F] mb-4 line-clamp-2">
+                        </Link>
+                        
+                        <Link href={`/post/${post.id}`}>
+                          <p className="text-[#5E7B6F] mb-4 line-clamp-2 cursor-pointer">
                             {post.content.replace(/<[^>]+>/g, "").slice(0, 150)}...
                           </p>
+                        </Link>
                           
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4 text-sm text-[#5E7B6F]">
-                              <span className="flex items-center gap-1">
-                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-                                </svg>
-                                {post.likes?.length || 0}
-                              </span>
-                            </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4 text-sm text-[#5E7B6F]">
+                            <span className="flex items-center gap-1">
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                              </svg>
+                              {post.likes?.length || 0}
+                            </span>
                           </div>
                         </div>
-                        
-                        {post.imageUrl && (
-                          <div className={`flex-shrink-0 overflow-hidden rounded ${
+                      </div>
+                      
+                      {post.imageUrl && (
+                        <Link href={`/post/${post.id}`}>
+                          <div className={`flex-shrink-0 overflow-hidden rounded cursor-pointer ${
                             index === 0 ? 'w-32 h-32' : 'w-24 h-24'
                           }`}>
                             <Image
@@ -136,9 +140,9 @@ export default function HomePage() {
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             />
                           </div>
-                        )}
-                      </div>
-                    </Link>
+                        </Link>
+                      )}
+                    </div>
                   </article>
                 ))}
               </div>

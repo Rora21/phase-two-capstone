@@ -51,7 +51,15 @@ export default function RootLayout({ children }) {
                   </button>
                 </div>
               ) : (
-                <Link href="/login" className="hover:underline">Login</Link>
+                <div className="flex items-center gap-4">
+                  <Link href="/login" className="hover:underline">Login</Link>
+                  <Link 
+                    href="/signup" 
+                    className="px-4 py-2 bg-[#3E6B4B] text-white rounded-lg hover:bg-[#2D5038] transition"
+                  >
+                    Sign up
+                  </Link>
+                </div>
               )}
             </div>
           </nav>

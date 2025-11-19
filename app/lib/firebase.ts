@@ -1,5 +1,5 @@
 // app/lib/firebase.ts
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getAuth } from "firebase/auth";
@@ -14,14 +14,19 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase only if config is valid and not already initialized
+let app;
+if (typeof window !== 'undefined' && firebaseConfig.apiKey && firebaseConfig.projectId) {
+  app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+} else {
+  app = null;
+}
 
 // Firestore
-export const db = getFirestore(app);
+export const db = app ? getFirestore(app) : null;
 
 // Storage
-export const storage = getStorage(app);
+export const storage = app ? getStorage(app) : null;
 
-// Auth 🟦
-export const auth = getAuth(app);
+// Auth
+export const auth = app ? getAuth(app) : null;

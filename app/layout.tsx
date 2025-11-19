@@ -2,19 +2,37 @@
 
 import "./globals.css";
 import { useEffect, useState } from "react";
-import { auth } from "./lib/firebase";
-import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import Link from "next/link";
+import { User } from "firebase/auth";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
+    const initAuth = async () => {
+      try {
+        const { auth } = await import("./lib/firebase");
+        const { onAuthStateChanged } = await import("firebase/auth");
+        
+        if (auth) {
+          const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            setUser(currentUser);
+          });
+          return unsubscribe;
+        }
+      } catch (error) {
+        console.warn('Firebase auth not available:', error);
+      }
+    };
+
+    let unsubscribe: (() => void) | undefined;
+    initAuth().then(unsub => {
+      unsubscribe = unsub;
     });
 
-    return () => unsubscribe();
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
   return (
@@ -60,7 +78,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   </Link>
 
                   <button
-                    onClick={() => signOut(auth)}
+                    onClick={async () => {
+                      try {
+                        const { auth } = await import("./lib/firebase");
+                        const { signOut } = await import("firebase/auth");
+                        if (auth) await signOut(auth);
+                      } catch (error) {
+                        console.error('Sign out failed:', error);
+                      }
+                    }}
                     className="text-sm text-gray-600 hover:text-black transition"
                   >
                     Sign out

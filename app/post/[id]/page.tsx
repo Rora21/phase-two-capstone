@@ -26,6 +26,11 @@ export default function PostPage({ params }: { params: Promise<{ id: string }> }
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
+    if (!db || !auth) {
+      console.warn('Firebase not initialized');
+      return;
+    }
+
     const unsubAuth = (auth as any).onAuthStateChanged?.((u: any) => setUser(u));
     const pDoc = doc(db, "posts", id);
     const unsubPost = onSnapshot(pDoc, (d) => setPost(d.exists() ? { id: d.id, ...d.data() } : null));
@@ -51,7 +56,7 @@ export default function PostPage({ params }: { params: Promise<{ id: string }> }
   const isLiked = user && Array.isArray(post.likes) && post.likes.includes(user.email);
 
   const toggleLike = async () => {
-    if (!user) {
+    if (!user || !db) {
       alert("Please sign in to like stories.");
       return;
     }
@@ -64,7 +69,7 @@ export default function PostPage({ params }: { params: Promise<{ id: string }> }
   };
 
   const submitComment = async () => {
-    if (!user) {
+    if (!user || !db) {
       alert("Please sign in to comment.");
       return;
     }

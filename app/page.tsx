@@ -1,13 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { db } from "./lib/firebase";
+import { db, auth } from "./lib/firebase";
 import {
   collection,
   query,
   where,
   onSnapshot,
   orderBy,
+  doc,
+  getDoc,
+  getDocs,
+  updateDoc,
+  arrayUnion,
+  arrayRemove,
 } from "firebase/firestore";
 import Link from "next/link";
 import Image from "next/image";
@@ -18,6 +24,8 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [followingList, setFollowingList] = useState<string[]>([]);
 
   useEffect(() => {
     const q = query(
@@ -33,7 +41,18 @@ export default function HomePage() {
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    // Listen to current user
+    const unsubAuth = (auth as any).onAuthStateChanged?.((user: any) => {
+      setCurrentUser(user);
+      if (user) {
+        loadFollowingList(user.uid);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+      unsubAuth?.();
+    };
   }, []);
 
   const calculateReadTime = (content: string): number => {
@@ -48,6 +67,57 @@ export default function HomePage() {
       setFilteredPosts(posts);
     } else {
       setFilteredPosts(posts.filter(post => post.category === category));
+    }
+  };
+
+  const loadFollowingList = async (userId: string) => {
+    try {
+      const userDoc = await getDoc(doc(db, "users", userId));
+      if (userDoc.exists()) {
+        setFollowingList(userDoc.data().following || []);
+      }
+    } catch (error) {
+      console.error("Error loading following list:", error);
+    }
+  };
+
+  const toggleFollowFromHome = async (authorEmail: string) => {
+    if (!currentUser) return;
+    
+    try {
+      // Find the author's user document
+      const authorQuery = query(collection(db, "users"), where("email", "==", authorEmail));
+      const authorSnapshot = await getDocs(authorQuery);
+      
+      if (!authorSnapshot.empty) {
+        const authorDoc = authorSnapshot.docs[0];
+        const authorId = authorDoc.id;
+        
+        const currentUserRef = doc(db, "users", currentUser.uid);
+        const authorRef = doc(db, "users", authorId);
+        
+        const isCurrentlyFollowing = followingList.includes(authorId);
+        
+        if (isCurrentlyFollowing) {
+          await updateDoc(currentUserRef, {
+            following: arrayRemove(authorId)
+          });
+          await updateDoc(authorRef, {
+            followers: arrayRemove(currentUser.uid)
+          });
+          setFollowingList(prev => prev.filter(id => id !== authorId));
+        } else {
+          await updateDoc(currentUserRef, {
+            following: arrayUnion(authorId)
+          });
+          await updateDoc(authorRef, {
+            followers: arrayUnion(currentUser.uid)
+          });
+          setFollowingList(prev => [...prev, authorId]);
+        }
+      }
+    } catch (error) {
+      console.error("Error toggling follow:", error);
     }
   };
 
@@ -200,29 +270,41 @@ export default function HomePage() {
                 </div>
               </div>
               
-              <div className="bg-white rounded-lg p-6 border border-[#E0D8CC]">
-                <h3 className="font-bold text-[#1A3D2F] mb-4">Who to follow</h3>
-                <div className="space-y-3">
-                  {posts.slice(0, 3).map((post) => (
-                    <div key={post.id} className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-[#3E6B4B] rounded-full flex items-center justify-center text-white text-sm font-bold">
-                        {post.author?.charAt(0)?.toUpperCase() || 'A'}
-                      </div>
-                      <div className="flex-1">
-                        <Link 
-                          href={`/profile/${post.author?.split('@')[0] || 'unknown'}`}
-                          className="text-sm font-medium text-[#1A3D2F] hover:text-[#3E6B4B] transition"
-                        >
-                          {post.author?.split('@')[0] || 'Unknown'}
-                        </Link>
-                      </div>
-                      <button className="text-sm text-[#3E6B4B] hover:text-[#2D5038] font-medium">
-                        Follow
-                      </button>
-                    </div>
-                  ))}
+              {currentUser && (
+                <div className="bg-white rounded-lg p-6 border border-[#E0D8CC]">
+                  <h3 className="font-bold text-[#1A3D2F] mb-4">Who to follow</h3>
+                  <div className="space-y-3">
+                    {posts
+                      .filter(post => post.author !== currentUser.email)
+                      .slice(0, 3)
+                      .map((post) => {
+                        const authorUsername = post.author?.split('@')[0] || 'unknown';
+                        return (
+                          <div key={post.id} className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-[#3E6B4B] rounded-full flex items-center justify-center text-white text-sm font-bold">
+                              {post.author?.charAt(0)?.toUpperCase() || 'A'}
+                            </div>
+                            <div className="flex-1">
+                              <Link 
+                                href={`/profile/${authorUsername}`}
+                                className="text-sm font-medium text-[#1A3D2F] hover:text-[#3E6B4B] transition"
+                              >
+                                {authorUsername}
+                              </Link>
+                            </div>
+                            <button 
+                              onClick={() => toggleFollowFromHome(post.author)}
+                              className="text-sm text-[#3E6B4B] hover:text-[#2D5038] font-medium"
+                            >
+                              Follow
+                            </button>
+                          </div>
+                        );
+                      })
+                    }
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

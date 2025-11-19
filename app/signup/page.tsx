@@ -42,6 +42,8 @@ export default function SignupPage() {
         bio: formData.bio,
         joinedAt: serverTimestamp(),
         postsCount: 0,
+        followers: [],
+        following: [],
         followersCount: 0,
         followingCount: 0
       });

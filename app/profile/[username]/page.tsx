@@ -9,7 +9,11 @@ import {
   onSnapshot,
   doc,
   getDoc,
+  updateDoc,
+  arrayUnion,
+  arrayRemove,
 } from "firebase/firestore";
+import { auth } from "../../lib/firebase";
 import Link from "next/link";
 import Image from "next/image";
 import { Post } from "../../../types";
@@ -20,11 +24,23 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("stories");
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isFollowing, setIsFollowing] = useState(false);
 
   useEffect(() => {
     loadUserProfile();
     loadUserPosts();
-  }, [username]);
+    
+    // Listen to current user
+    const unsubAuth = (auth as any).onAuthStateChanged?.((u: any) => {
+      setCurrentUser(u);
+      if (u && user) {
+        checkFollowStatus(u.uid, user.uid);
+      }
+    });
+    
+    return () => unsubAuth?.();
+  }, [username, user]);
 
   const loadUserProfile = async () => {
     try {
@@ -34,7 +50,8 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
       
       const unsubscribe = onSnapshot(q, (snapshot) => {
         if (!snapshot.empty) {
-          setUser({ id: snapshot.docs[0].id, ...snapshot.docs[0].data() });
+          const userData = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
+          setUser(userData);
         }
         setLoading(false);
       });
@@ -43,6 +60,49 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
     } catch (error) {
       console.error("Error loading user profile:", error);
       setLoading(false);
+    }
+  };
+
+  const checkFollowStatus = async (currentUserId: string, profileUserId: string) => {
+    try {
+      const currentUserDoc = await getDoc(doc(db, "users", currentUserId));
+      if (currentUserDoc.exists()) {
+        const following = currentUserDoc.data().following || [];
+        setIsFollowing(following.includes(profileUserId));
+      }
+    } catch (error) {
+      console.error("Error checking follow status:", error);
+    }
+  };
+
+  const toggleFollow = async () => {
+    if (!currentUser || !user) return;
+    
+    try {
+      const currentUserRef = doc(db, "users", currentUser.uid);
+      const profileUserRef = doc(db, "users", user.uid);
+      
+      if (isFollowing) {
+        // Unfollow
+        await updateDoc(currentUserRef, {
+          following: arrayRemove(user.uid)
+        });
+        await updateDoc(profileUserRef, {
+          followers: arrayRemove(currentUser.uid)
+        });
+        setIsFollowing(false);
+      } else {
+        // Follow
+        await updateDoc(currentUserRef, {
+          following: arrayUnion(user.uid)
+        });
+        await updateDoc(profileUserRef, {
+          followers: arrayUnion(currentUser.uid)
+        });
+        setIsFollowing(true);
+      }
+    } catch (error) {
+      console.error("Error toggling follow:", error);
     }
   };
 
@@ -113,14 +173,20 @@ export default function ProfilePage({ params }: { params: Promise<{ username: st
                 <span>{user.followingCount || 0} Following</span>
               </div>
               
-              <div className="mt-6">
-                <button className="bg-[#3E6B4B] text-white px-6 py-2 rounded-full hover:bg-[#2D5038] transition mr-3">
-                  Follow
-                </button>
-                <button className="border border-[#E0D8CC] text-[#5E7B6F] px-6 py-2 rounded-full hover:bg-[#E0D8CC] transition">
-                  Message
-                </button>
-              </div>
+              {currentUser && currentUser.uid !== user.uid && (
+                <div className="mt-6">
+                  <button 
+                    onClick={toggleFollow}
+                    className={`px-6 py-2 rounded-full transition ${
+                      isFollowing 
+                        ? "bg-gray-200 text-[#5E7B6F] hover:bg-gray-300" 
+                        : "bg-[#3E6B4B] text-white hover:bg-[#2D5038]"
+                    }`}
+                  >
+                    {isFollowing ? "Following" : "Follow"}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

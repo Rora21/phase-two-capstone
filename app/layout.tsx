@@ -41,7 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <title>Aurie - Where Stories Come to Life</title>
         <meta name="description" content="Discover and share compelling stories, ideas, and insights on Aurie. A modern publishing platform for writers and readers." />
         <meta name="keywords" content="writing, blogging, stories, articles, publishing, medium, aurie" />
-        <meta name="author" content="Aurie" />
+        <meta name="author" content="Rora" />
         <meta property="og:title" content="Aurie - Where Stories Come to Life" />
         <meta property="og:description" content="Discover and share compelling stories, ideas, and insights on Aurie." />
         <meta property="og:type" content="website" />

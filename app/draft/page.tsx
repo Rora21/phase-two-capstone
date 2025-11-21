@@ -23,17 +23,20 @@ export default function DraftsPage() {
   const { user } = UseAuth();
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !db) {
+      setLoading(false);
+      return;
+    }
 
     const q = query(
       collection(db, "posts"),
-      where("status", "==", "draft"),
-      where("author", "==", user.email),
       where("authorId", "==", user.uid)
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      setDrafts(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Post)));
+      const allPosts = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Post));
+      const draftPosts = allPosts.filter(post => post.status === "draft");
+      setDrafts(draftPosts.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
       setLoading(false);
     });
 
@@ -41,18 +44,16 @@ export default function DraftsPage() {
   }, [user]);
 
   const deleteDraft = async (id: string) => {
-    if (confirm("Are you sure you want to delete this draft?")) {
-      await deleteDoc(doc(db, "posts", id));
-    }
+    if (!db || !confirm("Are you sure you want to delete this draft?")) return;
+    await deleteDoc(doc(db, "posts", id));
   };
 
   const publishDraft = async (id: string) => {
-    if (confirm("Are you sure you want to publish this draft?")) {
-      await updateDoc(doc(db, "posts", id), {
-        status: "published",
-        updatedAt: serverTimestamp()
-      });
-    }
+    if (!db || !confirm("Are you sure you want to publish this draft?")) return;
+    await updateDoc(doc(db, "posts", id), {
+      status: "published",
+      updatedAt: serverTimestamp()
+    });
   };
 
   if (!user) {

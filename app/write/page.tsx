@@ -92,9 +92,19 @@ function WritePageContent() {
     }
 
     const trimmedTitle = title.trim();
-    const trimmedContent = content.replace(/<[^>]*>/g, '').trim();
+    // Better content validation - remove HTML tags, decode entities, and check for meaningful content
+    const cleanContent = content
+      .replace(/<[^>]*>/g, '') // Remove HTML tags
+      .replace(/&nbsp;/g, ' ') // Replace non-breaking spaces
+      .replace(/&[a-zA-Z0-9#]+;/g, '') // Remove HTML entities
+      .trim();
     
-    if (!trimmedTitle || !trimmedContent) {
+    console.log('Title:', `"${trimmedTitle}"`);
+    console.log('Content length:', content.length);
+    console.log('Clean content:', `"${cleanContent}"`);
+    console.log('Clean content length:', cleanContent.length);
+    
+    if (!trimmedTitle || !cleanContent) {
       alert("Title & content required!");
       return;
     }

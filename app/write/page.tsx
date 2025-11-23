@@ -84,7 +84,7 @@ function WritePageContent() {
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (saveStatus: string) => {
     if (!user) {
       alert("Please login to save posts.");
       router.push('/login');
@@ -99,23 +99,19 @@ function WritePageContent() {
       .replace(/&[a-zA-Z0-9#]+;/g, '') // Remove HTML entities
       .trim();
     
-    console.log('Title:', `"${trimmedTitle}"`);
-    console.log('Content length:', content.length);
-    console.log('Clean content:', `"${cleanContent}"`);
-    console.log('Clean content length:', cleanContent.length);
-    
     if (!trimmedTitle || !cleanContent) {
       alert("Title & content required!");
       return;
     }
 
     setLoading(true);
+    setStatus(saveStatus);
 
     try {
       const postData = {
         title: trimmedTitle,
         content,
-        status,
+        status: saveStatus,
         category: category || "general",
         author: user.email || "Unknown",
         authorId: user.uid || "",
@@ -137,7 +133,7 @@ function WritePageContent() {
       setContent("");
       setCategory("");
 
-      if (status === "published") {
+      if (saveStatus === "published") {
         router.push("/");
       } else {
         router.push("/draft");
@@ -160,20 +156,14 @@ function WritePageContent() {
           </h1>
           <div className="flex items-center gap-3">
             <button
-              onClick={() => {
-                setStatus("draft");
-                handleSave();
-              }}
+              onClick={() => handleSave("draft")}
               className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition"
               disabled={loading}
             >
               {loading && status === "draft" ? "Saving..." : "Save draft"}
             </button>
             <button
-              onClick={() => {
-                setStatus("published");
-                handleSave();
-              }}
+              onClick={() => handleSave("published")}
               className="px-6 py-2 bg-black text-white text-sm rounded-full hover:bg-gray-800 transition disabled:opacity-50"
               disabled={loading}
             >

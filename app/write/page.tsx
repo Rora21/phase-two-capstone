@@ -91,7 +91,10 @@ function WritePageContent() {
       return;
     }
 
-    if (!title || !content) {
+    const trimmedTitle = title.trim();
+    const trimmedContent = content.replace(/<[^>]*>/g, '').trim();
+    
+    if (!trimmedTitle || !trimmedContent) {
       alert("Title & content required!");
       return;
     }
@@ -100,7 +103,7 @@ function WritePageContent() {
 
     try {
       const postData = {
-        title,
+        title: trimmedTitle,
         content,
         status,
         category: category || "general",

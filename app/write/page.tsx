@@ -92,34 +92,14 @@ function WritePageContent() {
     }
 
     const trimmedTitle = title.trim();
-    
-    // Debug logging
-    console.log('=== SAVE DEBUG ===');
-    console.log('Raw title:', JSON.stringify(title));
-    console.log('Trimmed title:', JSON.stringify(trimmedTitle));
-    console.log('Raw content:', JSON.stringify(content));
-    console.log('Content length:', content.length);
-    
-    // Better content validation - remove HTML tags, decode entities, and check for meaningful content
     const cleanContent = content
-      .replace(/<[^>]*>/g, '') // Remove HTML tags
-      .replace(/&nbsp;/g, ' ') // Replace non-breaking spaces
-      .replace(/&[a-zA-Z0-9#]+;/g, '') // Remove HTML entities
+      .replace(/<[^>]*>/g, '')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&[a-zA-Z0-9#]+;/g, '')
       .trim();
     
-    console.log('Clean content:', JSON.stringify(cleanContent));
-    console.log('Clean content length:', cleanContent.length);
-    console.log('Title check:', !trimmedTitle);
-    console.log('Content check:', !cleanContent);
-    console.log('=================');
-    
-    if (!trimmedTitle) {
-      alert("Title is required!");
-      return;
-    }
-    
-    if (!cleanContent) {
-      alert("Content is required!");
+    if (!trimmedTitle || !cleanContent) {
+      alert("Title & content required!");
       return;
     }
 
@@ -219,10 +199,7 @@ function WritePageContent() {
             <JoditEditor 
               ref={editor} 
               value={content} 
-              onChange={(newContent) => {
-                console.log('Editor onChange:', JSON.stringify(newContent));
-                setContent(newContent);
-              }}
+              onChange={setContent}
               config={{
                 readonly: false,
                 placeholder: 'Tell your story...',
